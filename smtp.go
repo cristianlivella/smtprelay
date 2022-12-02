@@ -27,6 +27,7 @@ import (
 	"net/smtp"
 	"net/textproto"
 	"strings"
+	"regexp"
 )
 
 // A Client represents a client connection to an SMTP server.
@@ -324,6 +325,11 @@ func SendMail(r *Remote, from string, to []string, msg []byte) error {
 	if r.Sender != "" {
 		from = r.Sender
 	}
+
+	msgString := string(msg[:])
+	re := regexp.MustCompile(`From:(.*)<(.*)>`)
+	msgString = re.ReplaceAllString(msgString, "From:$1<" + from + ">")
+	msg = []byte(msgString)
 
 	if err := validateLine(from); err != nil {
 		return err
